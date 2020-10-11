@@ -1,0 +1,49 @@
+{
+    "name": "spacecatninja/imager-x-aws-serverless-transformer",
+    "description": "AWS Serverless Image Handler transformer for Imager X",
+    "type": "craft-plugin",
+    "version": "v1.0.0",
+    "license": "MIT",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "image",
+        "responsive",
+        "transform",
+        "srcset",
+        "picture",
+        "aws",
+        "serverless"
+    ],
+    "support": {
+        "docs": "https://github.com/spacecatninja/craft-imager-x-aws-serverless-transformer/blob/master/README.md",
+        "issues": "https://github.com/spacecatninja/craft-imager-x-aws-serverless-transformer/issues"
+    },
+    "authors": [
+        {
+            "name": "SPACECATNINJA",
+            "homepage": "https://www.spacecat.ninja"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.3.0",
+        "ssnepenthe/color-utils": "~0.4"
+    },
+    "autoload": {
+        "psr-4": {
+          "spacecatninja\\awsserverlesstransformer\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Imager X AWS Serverless Transformer",
+        "handle": "imager-x-aws-serverless-transformer",
+        "schemaVersion": "1.0.0",
+        "hasCpSettings": false,
+        "hasCpSection": false,
+        "changelogUrl": "https://raw.githubusercontent.com/spacecatninja/craft-imager-x-aws-serverless-transformer/master/CHANGELOG.md",
+        "components": {},
+        "class": "spacecatninja\\awsserverlesstransformer\\AwsServerlessTransformer"
+    }
+}
