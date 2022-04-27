@@ -3,13 +3,14 @@
  * AWS Serverless Image Handler transformer for Imager X
  *
  * @link      https://www.spacecat.ninja
- * @copyright Copyright (c) 2020 André Elvan
+ * @copyright Copyright (c) 2022 André Elvan
  */
 
 namespace spacecatninja\awsserverlesstransformer\helpers;
 
 use Craft;
 use craft\elements\Asset;
+use craft\helpers\App;
 use spacecatninja\imagerx\models\ConfigModel;
 use function SSNepenthe\ColorUtils\{
     color
@@ -20,28 +21,30 @@ class AwsServerlessHelpers
 
     /**
      * @param Asset $image
+     *
      * @return string
      */
-    public static function getImageKey($image): string
+    public static function getImageKey(Asset $image): string
     {
+        $subfolder = null;
+        
         try {
-            $volume = $image->getVolume();
-            $volumeSubfolder = $volume->subfolder ?? null;
+            $fs = $image->getVolume()->getFs();
+            $subfolder = $fs->subfolder ?? null;
         } catch (\Throwable $e) {
-            Craft::error('Could not get volume from image: ' . $e->getMessage(), __METHOD__);
-            $volumeSubfolder = '';
+            Craft::error('Could not get filesystem from image: ' . $e->getMessage(), __METHOD__);
         }
 
         $imagePath = $image->getPath();
 
-        return ltrim(($volumeSubfolder ? rtrim(Craft::parseEnv($volumeSubfolder), '/') : '') . '/' . $imagePath, '/');
+        return ltrim(($subfolder ? rtrim(App::parseEnv($subfolder), '/') : '') . '/' . $imagePath, '/');
     }
 
     /**
      * @param array $letterboxDef
      * @return array
      */
-    public static function getLetterboxColor($letterboxDef): array
+    public static function getLetterboxColor(array $letterboxDef): array
     {
         $color = $letterboxDef['color'] ?? '#000000';
         $opacity = $letterboxDef['opacity'] ?? null;
@@ -50,17 +53,14 @@ class AwsServerlessHelpers
     }
 
     /**
-     * @param string $color
-     * @param null|float $opacity
+     * @param string     $color
+     * @param float|null $opacity
+     *
      * @return array|null
      */
-    public static function parseColor($color, $opacity = null)
+    public static function parseColor(string $color, float $opacity = null): ?array
     {
         $col = color($color);
-
-        if (!$col) {
-            return null;
-        }
 
         $rgb = $col->getRgb();
 
@@ -73,40 +73,37 @@ class AwsServerlessHelpers
     }
 
     /**
-     * @param string $format
+     * @param string      $format
      * @param ConfigModel $config
+     *
      * @return array
      */
-    public static function getFormatOptions($format, $config): array
+    public static function getFormatOptions(string $format, ConfigModel $config): array
     {
-        switch ($format) {
-            case 'jpeg':
-                return [
-                    'quality' => $config->jpegQuality,
-                    'progressive' => $config->interlace !== false,
-                    'optimiseCoding' => true,
-                    'trellisQuantisation' => true,
-                    'overshootDeringing' => true,
-                ];
-            case 'png':
-                return [
-                    'compressionLevel' => $config->pngCompressionLevel,
-                    'progressive' => $config->interlace !== false,
-                ];
-            case 'webp':
-                return [
-                    'quality' => $config->webpQuality
-                ];
-        }
-
-        return [];
+        return match ($format) {
+            'jpeg' => [
+                'quality' => $config->jpegQuality,
+                'progressive' => $config->interlace !== false,
+                'optimiseCoding' => true,
+                'trellisQuantisation' => true,
+                'overshootDeringing' => true,
+            ],
+            'png' => [
+                'compressionLevel' => $config->pngCompressionLevel,
+                'progressive' => $config->interlace !== false,
+            ],
+            'webp' => [
+                'quality' => $config->webpQuality
+            ],
+            default => [],
+        };
     }
 
     /**
      * @param array $effects
      * @return array
      */
-    public static function convertEffects($effects): array
+    public static function convertEffects(array $effects): array
     {
         $r = [];
 
@@ -142,7 +139,7 @@ class AwsServerlessHelpers
      * @param string $position
      * @return string
      */
-    public static function getPosition($position): string
+    public static function getPosition(string $position): string
     {
         $positionArr  = explode(' ', $position);
         

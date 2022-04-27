@@ -3,16 +3,17 @@
  * AWS Serverless Image Handler transformer for Imager X
  *
  * @link      https://www.spacecat.ninja
- * @copyright Copyright (c) 2020 André Elvan
+ * @copyright Copyright (c) 2022 André Elvan
  */
 
 namespace spacecatninja\awsserverlesstransformer\transformers;
 
 use Craft;
-use craft\awss3\Volume;
 use craft\base\Component;
+use craft\awss3\Fs;
 use craft\elements\Asset;
 
+use craft\helpers\App;
 use spacecatninja\awsserverlesstransformer\AwsServerlessTransformer;
 use spacecatninja\awsserverlesstransformer\helpers\AwsServerlessHelpers;
 use spacecatninja\awsserverlesstransformer\models\AwsServerlessTransformedImageModel;
@@ -24,26 +25,26 @@ use spacecatninja\imagerx\exceptions\ImagerException;
 class AwsServerless extends Component implements TransformerInterface
 {
 
-    public static $strategyKeyTranslate = [
+    public static array $strategyKeyTranslate = [
         'fit' => 'inside',
         'crop' => 'cover',
         'stretch' => 'fill',
         'letterbox' => 'contain'
     ];
 
-    public static $formatTranslate = [
+    public static array $formatTranslate = [
         'jpg' => 'jpeg'
     ];
     
     /**
-     * @param Asset $image
+     * @param Asset|string $image
      * @param array $transforms
      *
      * @return array|null
      *
      * @throws ImagerException
      */
-    public function transform($image, $transforms)
+    public function transform(Asset|string $image, array $transforms): ?array
     {
         $transformedImages = [];
 
@@ -57,31 +58,32 @@ class AwsServerless extends Component implements TransformerInterface
     /**
      * @param Asset $image
      * @param array $transform
+     *
      * @return AwsServerlessTransformedImageModel
      * @throws ImagerException
      */
-    private function getTransformedImage($image, $transform): AwsServerlessTransformedImageModel
+    private function getTransformedImage(Asset $image, array $transform): AwsServerlessTransformedImageModel
     {
         /** @var Settings $settings */
-        $settings = AwsServerlessTransformer::$plugin->getSettings();
+        $settings = AwsServerlessTransformer::getInstance()?->getSettings();
         $config = ImagerService::getConfig();
         $transformerParams = $transform['transformerParams'] ?? [];
         $bgColor = $config->getSetting('bgColor', $transform);
         
         $requestParams = [
-            'bucket' => Craft::parseEnv($settings->defaultBucket)
+            'bucket' => App::parseEnv($settings->defaultBucket)
         ];
 
         // Get bucket from volume if possible
         try {
-            $volume = $image->getVolume();
+            $fs = $image->getVolume()->getFs();
 
-            if ($volume instanceof Volume) {
-                $bucket = Craft::parseEnv($volume->bucket);
+            if ($fs instanceof Fs) {
+                $bucket = App::parseEnv($fs->bucket);
                 $requestParams['bucket'] = $bucket;
             }
         } catch (\Throwable $e) {
-            Craft::error('Could not get volume from image: ' . $e->getMessage(), __METHOD__);
+            Craft::error('Could not get filesystem from image: ' . $e->getMessage(), __METHOD__);
         }
 
         $requestParams['key'] = AwsServerlessHelpers::getImageKey($image);
@@ -187,7 +189,12 @@ class AwsServerless extends Component implements TransformerInterface
         $requestParams['edits'] = $edits;
 
         // Encode the $config and create the $url
-        $encodedRequestParams = json_encode($requestParams, JSON_FORCE_OBJECT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
+        try {
+            $encodedRequestParams = json_encode($requestParams, JSON_THROW_ON_ERROR | JSON_FORCE_OBJECT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_NUMERIC_CHECK);
+        } catch (\Throwable $e) {
+            Craft::error($e->getMessage());
+            throw new ImagerException($e->getMessage());
+        }
         $url = rtrim($settings->distributionUrl, '/') . '/' . base64_encode($encodedRequestParams);
         
         return new AwsServerlessTransformedImageModel($url, $image, $requestParams);

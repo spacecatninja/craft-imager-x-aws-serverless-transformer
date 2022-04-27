@@ -3,7 +3,7 @@
  * AWS Serverless Image Handler transformer for Imager X
  *
  * @link      https://www.spacecat.ninja
- * @copyright Copyright (c) 2020 André Elvan
+ * @copyright Copyright (c) 2022 André Elvan
  */
 
 namespace spacecatninja\awsserverlesstransformer\models;
@@ -18,10 +18,10 @@ class AwsServerlessTransformedImageModel extends BaseTransformedImageModel imple
      * ImgixTransformedImageModel constructor.
      *
      * @param string|null $imageUrl
-     * @param Asset|null $source
-     * @param array|null $params
+     * @param Asset|null  $source
+     * @param array|null  $params
      */
-    public function __construct($imageUrl = null, $source = null, $params = null)
+    public function __construct(string $imageUrl = null, Asset $source = null, array $params = null)
     {
         if ($imageUrl !== null) {
             $this->url = $imageUrl;
@@ -30,7 +30,7 @@ class AwsServerlessTransformedImageModel extends BaseTransformedImageModel imple
         $resize = $params['edits']['resize'];
 
         if (isset($resize['width'], $resize['height'], $source)) {
-            list($sourceWidth, $sourceHeight) = $this->getSourceImageDimensions($source);
+            [$sourceWidth, $sourceHeight] = $this->getSourceImageDimensions($source);
 
             $this->width = (int)$resize['width'];
             $this->height = (int)$resize['height'];
@@ -53,7 +53,7 @@ class AwsServerlessTransformedImageModel extends BaseTransformedImageModel imple
             }
         } else if (isset($resize['width']) || isset($resize['height'])) {
             if ($source !== null && $resize !== null) {
-                list($sourceWidth, $sourceHeight) = $this->getSourceImageDimensions($source);
+                [$sourceWidth, $sourceHeight] = $this->getSourceImageDimensions($source);
 
                 if ((int)$sourceWidth === 0 || (int)$sourceHeight === 0) {
                     if (isset($resize['width'])) {
@@ -63,14 +63,14 @@ class AwsServerlessTransformedImageModel extends BaseTransformedImageModel imple
                         $this->height = (int)$resize['height'];
                     }
                 } else {
-                    list($w, $h) = $this->calculateTargetSize($resize, $sourceWidth, $sourceHeight);
+                    [$w, $h] = $this->calculateTargetSize($resize, $sourceWidth, $sourceHeight);
 
                     $this->width = $w;
                     $this->height = $h;
                 }
             }
         } else { // Neither is set, image is not resized. Just get dimensions and return.
-            list($sourceWidth, $sourceHeight) = $this->getSourceImageDimensions($source);
+            [$sourceWidth, $sourceHeight] = $this->getSourceImageDimensions($source);
 
             $this->width = $sourceWidth;
             $this->height = $sourceHeight;
@@ -106,7 +106,7 @@ class AwsServerlessTransformedImageModel extends BaseTransformedImageModel imple
      *
      * @return array
      */
-    protected function calculateTargetSize($params, $sourceWidth, $sourceHeight): array
+    protected function calculateTargetSize(array $params, int $sourceWidth, int $sourceHeight): array
     {
         $fit = $params['fit'];
         $ratio = $sourceWidth / $sourceHeight;
@@ -132,23 +132,7 @@ class AwsServerlessTransformedImageModel extends BaseTransformedImageModel imple
         }
 
 
-        return [$w ?: 0, $h ?: 0];
+        return [0, 0];
     }
-
-    /**
-     * @return string
-     */
-    public function getDataUri(): string
-    {
-        return '';
-    }
-
-    /**
-     * @return string
-     */
-    public function getBase64Encoded(): string
-    {
-        return '';
-    }
-
+    
 }

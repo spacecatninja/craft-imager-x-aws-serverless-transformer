@@ -6,7 +6,7 @@ use craft\base\Model;
 
 class Settings extends Model
 {
-    public $distributionUrl = '';
-    public $defaultBucket = '';
-    public $autoConvertGif = true;
+    public string $distributionUrl = '';
+    public string $defaultBucket = '';
+    public bool $autoConvertGif = true;
 }

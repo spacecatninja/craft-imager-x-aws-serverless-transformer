@@ -3,11 +3,12 @@
  * AWS Serverless Image Handler transformer for Imager X
  *
  * @link      https://www.spacecat.ninja
- * @copyright Copyright (c) 2020 André Elvan
+ * @copyright Copyright (c) 2022 André Elvan
  */
 
 namespace spacecatninja\awsserverlesstransformer;
 
+use craft\base\Model;
 use craft\base\Plugin;
 
 use spacecatninja\awsserverlesstransformer\models\Settings;
@@ -18,23 +19,10 @@ use yii\base\Event;
 
 class AwsServerlessTransformer extends Plugin
 {
-    // Static Properties
-    // =========================================================================
-
-    /**
-     * @var AwsServerlessTransformer
-     */
-    public static $plugin;
-
-    // Public Methods
-    // =========================================================================
-
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        self::$plugin = $this;
-        
         // Register transformer with Imager
         Event::on(\spacecatninja\imagerx\ImagerX::class,
             \spacecatninja\imagerx\ImagerX::EVENT_REGISTER_TRANSFORMERS,
@@ -47,7 +35,7 @@ class AwsServerlessTransformer extends Plugin
     /**
      * @inheritdoc
      */
-    protected function createSettingsModel()
+    protected function createSettingsModel(): ?Model 
     {
         return new Settings();
     }
