@@ -1,6 +1,6 @@
 # AWS Serverless Image Handler transformer for Imager X Changelog
 
-## Unreleased
+## 2.0.0 - 2022-05-04
 
 ### Added
 - Added support for Craft 4
