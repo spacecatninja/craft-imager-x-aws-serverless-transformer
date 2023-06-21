@@ -2,7 +2,7 @@
     "name": "spacecatninja/imager-x-aws-serverless-transformer",
     "description": "AWS Serverless Image Handler transformer for Imager X",
     "type": "craft-plugin",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "license": "MIT",
     "keywords": [
         "craft",
