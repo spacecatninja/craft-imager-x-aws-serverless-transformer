@@ -105,7 +105,13 @@ Probably not needed, but you never know.
 _Make sure you add all the buckets you've set up Craft to use, when you set up your
 Image Handler in AWS._
  
+### signatureKey [string]
+Default: `''`  
+The AWS Image Handler supports using [signed URLs](https://docs.aws.amazon.com/solutions/latest/serverless-image-handler/considerations.html#image-url-signature) 
+to prevent third parties from generating their own transforms. Once you’ve configured the image handler to use them,
+add your signing key and generated URLs will include a `?signature=` param that’s properly hashed and ready to go.
 
+Be careful with this! Once enabled on the server side, any transform URL without a valid signature will return an error.
 
 Price, license and support
 ---

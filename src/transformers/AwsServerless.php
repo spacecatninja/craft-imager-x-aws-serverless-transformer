@@ -195,7 +195,16 @@ class AwsServerless extends Component implements TransformerInterface
             Craft::error($e->getMessage());
             throw new ImagerException($e->getMessage());
         }
-        $url = rtrim($settings->distributionUrl, '/') . '/' . base64_encode($encodedRequestParams);
+
+        $path = '/' . base64_encode($encodedRequestParams);
+        $url = rtrim($settings->distributionUrl, '/') . $path;
+
+        if (! empty($settings->signatureKey)) {
+            // Prepare the signature if the settings model has a key we should use
+            $signature = hash_hmac('sha256', $path, $settings->signatureKey);
+            // Append the signature to the URL
+            $url .= '?signature=' . $signature;
+        }
         
         return new AwsServerlessTransformedImageModel($url, $image, $requestParams);
     }
