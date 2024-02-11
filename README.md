@@ -5,7 +5,7 @@ Also, an example of [how to make a custom transformer for Imager X](https://imag
 
 ## Requirements
 
-This plugin requires Craft CMS 4.0.0 or later, [Imager X 4.0.0](https://github.com/spacecatninja/craft-imager-x/) or later,
+This plugin requires Craft CMS 5.0.0-beta.1 or later, [Imager X 5.0.0-beta.1](https://github.com/spacecatninja/craft-imager-x/) or later,
 and a working [AWS Serverless Image Handler](https://aws.amazon.com/solutions/implementations/serverless-image-handler/) setup.
  
 ## Usage

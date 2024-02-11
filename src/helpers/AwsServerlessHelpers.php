@@ -26,22 +26,30 @@ class AwsServerlessHelpers
      */
     public static function getImageKey(Asset $image): string
     {
-        $subfolder = null;
-        
+        $fsSubfolder = null;
+        $volumeSubfolder = null;
+
         try {
-            $fs = $image->getVolume()->getFs();
-            $subfolder = $fs->subfolder ?? null;
+            $volume = $image->getVolume();
+            $fs = $volume->getFs();
+            $fsSubfolder = $fs->subfolder ?? null;
+            $volumeSubfolder = $volume->getSubpath() ?? null;
         } catch (\Throwable $e) {
-            Craft::error('Could not get filesystem from image: ' . $e->getMessage(), __METHOD__);
+            Craft::error('Could not get filesystem from image: '.$e->getMessage(), __METHOD__);
         }
 
         $imagePath = $image->getPath();
 
-        return ltrim(($subfolder ? rtrim(App::parseEnv($subfolder), '/') : '') . '/' . $imagePath, '/');
+        return ltrim(
+            ($fsSubfolder ? trim(App::parseEnv($fsSubfolder), '/') : '').'/'.
+            ($volumeSubfolder ? trim(App::parseEnv($volumeSubfolder), '/') : '').'/'.
+            $imagePath,
+            '/');
     }
 
     /**
      * @param array $letterboxDef
+     *
      * @return array
      */
     public static function getLetterboxColor(array $letterboxDef): array
@@ -101,6 +109,7 @@ class AwsServerlessHelpers
 
     /**
      * @param array $effects
+     *
      * @return array
      */
     public static function convertEffects(array $effects): array
@@ -137,20 +146,21 @@ class AwsServerlessHelpers
 
     /**
      * @param string $position
+     *
      * @return string
      */
     public static function getPosition(string $position): string
     {
-        $positionArr  = explode(' ', $position);
-        
+        $positionArr = explode(' ', $position);
+
         $positionCovertArr = [
             0 => [0 => 'left top', 1 => 'top', 2 => 'right top'],
             1 => [0 => 'left', 1 => 'center', 2 => 'right'],
             2 => [0 => 'left bottom', 1 => 'bottom', 2 => 'right bottom']
         ];
 
-        $x = round(($positionArr[0]/100) * 2);
-        $y = round(($positionArr[1]/100) * 2);
+        $x = round(($positionArr[0] / 100) * 2);
+        $y = round(($positionArr[1] / 100) * 2);
 
         return $positionCovertArr[$y][$x];
     }
